@@ -30,6 +30,8 @@ bot = Bot(console_qr=True, cache_path=True)
 bot.enable_puid()
 # 定位公司打卡群
 company_group = ensure_one(bot.groups().search('打卡了'.decode("utf-8")))
+# 接入图灵机器人
+tuling = Tuling(api_key='***')
 
 # 成员对象
 class player():
@@ -65,8 +67,14 @@ def loop(type, puid):
         return no_ci
     print("error loop" + type + puid)
 
-# 处理指定群聊信息
-@bot.register(company_group)
+# 使用图灵回复文字消息
+@bot.register(msg_types=TEXT)
+def tuling_auto_reply(msg):
+    print ("<TL> tuling auto reply")
+    tuling.do_reply(msg)
+
+# 处理指定群聊信息的文字信息
+@bot.register(company_group, TEXT)
 def reply_group(msg):
     print(msg)
     if '微'.decode("utf-8") in msg.text and '交'.decode("utf-8") in msg.text and ('0' in msg.text or '1' in msg.text or '2' in msg.text or '.' in msg.text):
@@ -89,6 +97,9 @@ def reply_group(msg):
                 elif len(players) - ci_num == 3:
                     no_ci = loop('ci', '')
                     company_group.send(str_b.format(no_ci).decode("utf-8"))
+    elif msg.is_at:
+        # 如果被@则回复群聊信息
+        tuling_auto_reply(msg)
     else:
         print('false')
 
