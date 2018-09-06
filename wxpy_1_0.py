@@ -43,7 +43,7 @@ class player():
 # 加载目标用户集
 for member in company_group:
     print(member)
-    if '杨柳'.decode("utf-8") not in member.name and 'App' not in member.name:
+    if 'xxx'.decode("utf-8") not in member.name and 'App' not in member.name:
         players.append(player(member.puid, member, 0))
 
 # 打印list里的所有成员
@@ -121,7 +121,6 @@ def redo_job():
     loop('clear', '')
     global is_activity, ci_num
     is_activity = 1
-    print('ci_num:' + ci_num)
     ci_num = 0
     print('end redo_job')
 
