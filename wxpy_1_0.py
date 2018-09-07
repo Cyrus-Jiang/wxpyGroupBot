@@ -71,15 +71,19 @@ def loop(type, puid):
 # 使用图灵回复文字消息
 @bot.register(msg_types=TEXT)
 def tuling_auto_reply(msg):
-    # 如果被@则回复群聊信息
-    if msg.is_at:
+    print(msg)
+    # 如果是群聊但未被被@则不做回复
+    if isinstance(msg.chat, Group) and not msg.is_at:
+        print ("<TL> group no at")
+        return
+    else:
         print ("<TL> tuling auto reply")
         tuling.do_reply(msg)
 
 # 处理指定群聊信息的文字信息
 @bot.register(company_group, TEXT)
 def reply_group(msg):
-    print(msg)
+    
     if '微'.decode("utf-8") in msg.text and '交'.decode("utf-8") in msg.text and ('0' in msg.text or '1' in msg.text or '2' in msg.text or '.' in msg.text):
         index = loop('search', msg.member.puid)
         print("====>",index)
