@@ -8,6 +8,7 @@ from datetime import datetime
 import logging
 
 logging.basicConfig()
+
 # 群聊成员list
 players = []
 # 打卡人数
@@ -70,8 +71,10 @@ def loop(type, puid):
 # 使用图灵回复文字消息
 @bot.register(msg_types=TEXT)
 def tuling_auto_reply(msg):
-    print ("<TL> tuling auto reply")
-    tuling.do_reply(msg)
+    # 如果被@则回复群聊信息
+    if msg.is_at:
+        print ("<TL> tuling auto reply")
+        tuling.do_reply(msg)
 
 # 处理指定群聊信息的文字信息
 @bot.register(company_group, TEXT)
@@ -97,11 +100,9 @@ def reply_group(msg):
                 elif len(players) - ci_num == 3:
                     no_ci = loop('ci', '')
                     company_group.send(str_b.format(no_ci).decode("utf-8"))
-    elif msg.is_at:
-        # 如果被@则回复群聊信息
-        tuling_auto_reply(msg)
     else:
         print('false')
+    tuling_auto_reply(msg)
 
 # 输出统计信息,结束本轮记录
 def result_job():
