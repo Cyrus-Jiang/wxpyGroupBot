@@ -56,7 +56,7 @@ class player():
 # 加载目标用户集
 for member in company_group:
     log.info(member)
-    if 'xxx'.decode("utf-8") not in member.name and 'App' not in member.name:
+    if 'xxx'.decode("utf-8") not in member.name and member != bot.self:
         players.append(player(member.puid, member, 0))
 
 # 打印list里的所有成员
