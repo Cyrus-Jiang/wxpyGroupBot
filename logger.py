@@ -1,11 +1,13 @@
 # -*- coding: UTF-8 -*-
 
+import logging
+
 class Logger():
-    def __init__(self, lognName, logLevel, logger):
+    def __init__(self, logName, logLevel, logger):
  
         # 创建一个logger
         self.logger = logging.getLogger(logger)
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(logLevel)
  
         # 创建一个handler，用于写入日志文件
         fh = logging.FileHandler(logName)
