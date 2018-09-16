@@ -28,12 +28,14 @@ str_n = '@{} 你好像不是目标用户哦'
 # log文件相对路径
 log_path = r'log/'+ datetime.now().strftime("%Y-%m-%d") + '_WGB.txt'
 
-try：
-    # 如果文件已存在会抛OSError
+try:
     os.mknod(log_path)
+except OSError:
+    # 如果文件已存在会抛OSError
+    print("=====>OSrror")
 finally:
     # 获取log实例对象
-    log = Logger(logname=log_path, loglevel=logging.DEBUG, logger="wxpy_1_0.py").getlog()
+    log = Logger(logName=log_path, logLevel=logging.DEBUG, logger="wxpy_1_0.py").getlog()
     log.info("log has been successfully created")
 
 
@@ -60,7 +62,7 @@ for member in company_group:
         players.append(player(member.puid, member, 0))
 
 # 打印list里的所有成员
-log.info(type(players),players)
+log.info(players)
 
 # 循环遍历list查找指定用户
 def loop(type, puid):
@@ -96,15 +98,15 @@ def tuling_auto_reply(msg):
 @bot.register(company_group, TEXT)
 def reply_group(msg):
     # 筛选命中信息处理
-    if '微'.decode("utf-8") in msg.text and '交'.decode("utf-8") in msg.text and filter(str.isdigit, msg.text) != '' and '.' in msg.text:
+    if '微'.decode("utf-8") in msg.text and '交'.decode("utf-8") in msg.text and filter(str.isdigit, str(msg.text)) != '' and '.' in msg.text:
         index = loop('search', msg.member.puid)
-        log.info("index:",index)
+        log.info("index:" + str(index))
         if index is None:
             company_group.send(str_n.format(msg.member.name).decode("utf-8"))
         else:
             # 如果未曾打卡且在活动状态,则计入已打卡名单
             if players[index].have_clocked_in == 0 and is_activity == 1:
-                log.info('reply_group:true')
+                log.info('reply_group: true')
                 players[index].have_clocked_in = 1
                 global ci_num
                 ci_num += 1
