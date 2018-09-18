@@ -82,6 +82,11 @@ def loop(type, puid):
         return no_ci
     log.info("error loop:" + type + puid)
 
+# 自动接受好友请求
+@bot.register(msg_types=FRIENDS)
+def auto_accept_friend(msg):
+    new_friend = bot.accept_friend(msg.card)
+
 # 使用图灵回复文字消息
 @bot.register(msg_types=TEXT)
 def tuling_auto_reply(msg):
