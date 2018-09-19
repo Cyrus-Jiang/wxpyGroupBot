@@ -2,10 +2,13 @@
 
 import json
 import urllib2
+from logger import Logger
 from datetime import datetime
 
 # 调用接口查询类型
-def query(log)
+def query(log_path)
+    log = Logger(logName=log_path, logLevel=logging.DEBUG, logger="holiday.py").getlog()
+    
     date = datetime.now().strftime("%Y-%m-%d")
     server_url = "http://www.easybots.cn/api/holiday.php?d="
  
