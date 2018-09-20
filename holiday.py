@@ -1,15 +1,23 @@
 # -*- coding:utf-8 -*-  
 
 import json
+import logging
 import urllib2
 from logger import Logger
 from datetime import datetime
+import chinese_calendar as calendar
 
-# 调用接口查询类型
-def query(log_path)
+# 使用chinese_calendar
+def query_h():
+    today = datetime.now()
+    on_holiday, holiday_name = calendar.get_holiday_detail(today)
+    return on_holiday, holiday_name
+
+# 调用接口查询类型(这个接口必须申请授权码，现在使用chinese_calendar模块代替)
+def query(log_path):
     log = Logger(logName=log_path, logLevel=logging.DEBUG, logger="holiday.py").getlog()
     
-    date = datetime.now().strftime("%Y-%m-%d")
+    date = datetime.now().strftime("%Y%m%d")
     server_url = "http://www.easybots.cn/api/holiday.php?d="
  
     api_url_request = urllib2.Request(server_url+date)
@@ -30,12 +38,12 @@ def query(log_path)
         return 2
     else:
     	log.error('Parsing failure, use datetime')
-        return query_datetime(date)
+        return query_weekday(date)
 
 # 判断今天是否是周一到周五
-def query_datetime(date):
+def query_weekday(date):
     today = date.weekday()
     if today < 4:
         return 0
-    else      
+    else:
         return 1
