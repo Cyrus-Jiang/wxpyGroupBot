@@ -61,10 +61,8 @@ bot.enable_puid()
 # 定位公司打卡群
 groups.append(ensure_one(bot.groups().search('版本测试群'.decode("utf-8"))))
 groups.append(ensure_one(bot.groups().search('打卡了'.decode("utf-8"))))
-# groups.append(ensure_one(bot.groups().search('打卡了'.decode("utf-8"))))
-# company_group0 = ensure_one(bot.groups().search('版本测试群'.decode("utf-8")))
-# company_group1 = ensure_one(bot.groups().search('打卡了'.decode("utf-8")))
-# company_group2 = ensure_one(bot.groups().search('打卡了'.decode("utf-8")))
+special_group = ensure_one(bot.groups().search('总行三部群'.decode("utf-8")))
+groups.append(special_group)
 
 # 接入图灵机器人
 tuling = Tuling(api_key)
@@ -143,7 +141,7 @@ def reply_group(msg, groups_index):
     log.info('start reply_group:' + str(groups_index))
     company_group = groups[groups_index]
     # 筛选命中信息处理
-    if '微'.decode("utf-8") in msg.text and '交'.decode("utf-8") in msg.text and filter(str.isdigit, str(msg.text)) != '' and ('.' in msg.text or ':' in msg.text):
+    if '微'.decode("utf-8") in msg.text and '交'.decode("utf-8") in msg.text and filter(str.isdigit, str(msg.text)) != '' and ('.' in msg.text or ':' in msg.text) or (company_group == special_group and msg.text.replace(' ','').isdigit()):
         index = loop(l_search, msg.member.puid, groups_index)
         log.info("index:" + str(index))
         if index is None:
@@ -179,7 +177,7 @@ def send_bless():
     log.info('start send_bless')
     if holiday_name != None and holiday_name != '':
         log.info('holiday_name:' + holiday_name)
-        loop_send(bot.groups(), 'Happy '+ holiday_name)
+        loop_send(bot.groups(), '@All people , Happy '+ holiday_name)
 
 # 每日凌晨查询是否节假日
 def query_holiday():
