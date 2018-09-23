@@ -76,7 +76,6 @@ class player():
         self.member = member
         self.have_clocked_in = have_clocked_in
 
-load_group_player(groups)
 # 加载目标用户集
 def load_group_player(group_list):
     for group in group_list:
@@ -92,6 +91,8 @@ def load_group_player(group_list):
         ci_nums.append(0)
         groups_players.append(players)
     log.info('end load_group_player')
+
+load_group_player(groups)
 
 # 循环遍历list查找指定用户或清空标志
 def loop(type, puid, groups_index):
@@ -137,7 +138,6 @@ def tuling_auto_reply(msg):
 def reply_group_0(msg):
     reply_group(msg, groups.index(msg.chat))
 
-
 # 打卡统计处理逻辑
 def reply_group(msg, groups_index):
     log.info('start reply_group:' + str(groups_index))
@@ -171,13 +171,32 @@ def reply_group(msg, groups_index):
 
 # 遍历群聊列表群发信息
 def loop_send(group_list, text):
-    for group in group_list
-        group.send(str_r.format(no_ci))
+    for group in group_list:
+        group.send(text)
+
+# 进行节日问候
+def send_bless():
+    log.info('start send_bless')
+    if holiday_name != None and holiday_name != '':
+        log.info('holiday_name:' + holiday_name)
+        loop_send(bot.groups(), 'Happy '+ holiday_name)
+
+# 每日凌晨查询是否节假日
+def query_holiday():
+    log.info('start query_holiday')
+    global today_holiday, holiday_name
+    today_holiday, holiday_name = holiday.query_h()
+    if today_holiday:
+        send_bless()
+    log.info('end query_holiday:' + str(today_holiday) + str(holiday_name))
+
+# 程序首次运行进行查询
+query_holiday()
 
 # 结算统计信息并输出,结束本轮记录
 def result_job():
     # 节假日则跳过
-    if today_holiday
+    if today_holiday:
         log.info('skip result_job')
         return
     log.info('start result_job')
@@ -189,14 +208,13 @@ def result_job():
 # 清空打卡标志,启动下一轮记录
 def redo_job():
     # 节假日则跳过
-    if today_holiday
+    if today_holiday:
         log.info('skip redo_job')
         return
     log.info('start redo_job')
     multiple_loops(l_clear)
-    global is_activity, ci_num
+    global is_activity
     is_activity = 1
-    ci_num = 0
     log.info('end redo_job')
 
 # 对所有群聊进行循环处理指定操作
@@ -204,21 +222,8 @@ def multiple_loops(type):
     for i in range(len(groups_players)):
         no_ci = loop(type, '', i)
         # 如果存在未打卡则发信息提醒
-        if type == l_ci and ci_num[i] != len(groups_players[i]):
+        if type == l_ci and ci_nums[i] != len(groups_players[i]):
             groups[i].send(str_r.format(no_ci))
-
-# 程序首次运行进行查询
-query_holiday()
-# 每日凌晨查询是否节假日
-def query_holiday():
-    log.info('start query_holiday')
-    global today_holiday, holiday_name
-    today_holiday, holiday_name = holiday.query_h()
-    log.info('end query_holiday:' + str(today_holiday) + str(holiday_name))
-
-# 进行节日问候
-def send_bless():
-    
 
 # BackgroundScheduler 定时监控
 scheduler = BackgroundScheduler()
