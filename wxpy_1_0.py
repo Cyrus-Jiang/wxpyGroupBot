@@ -12,8 +12,6 @@ from apscheduler.schedulers.background  import BackgroundScheduler
 
 logging.basicConfig()
 
-# 群聊成员list
-# players = []
 # loop标志
 l_ci = 'ci'
 l_clear = 'clear'
@@ -28,6 +26,8 @@ ci_nums = []
 is_activity = 1
 # 图灵key
 api_key = '***'
+# 是否预先检查
+is_check = 1
 # 今日节假日类型（工作日为 False,节假日为 True）
 today_holiday = False
 # 节假日名称
@@ -35,9 +35,11 @@ holiday_name = None
 # 已打卡提醒字符串
 str_a = '已有{}人打卡'
 # 未打卡提示字符串
-str_b = '{},请不要忘记打卡'
+str_b = '{} {},记得打卡哦'
+# 早晨问候
+str_m = '{},(^_^)v早上好'
 # 统计结果通知字符串
-str_r = '{},请检查是否已打卡'
+str_r = '{} {},请注意检查是否已经打卡'
 # 非目标用户字符串
 str_n = '@{} 你好像不是目标用户哦'
 # log文件相对路径
@@ -53,7 +55,6 @@ finally:
     log = Logger(logName=log_path, logLevel=logging.DEBUG, logger="wxpy_1_0.py").getlog()
     log.info("log has been successfully created")
 
-
 # 初始化机器人，扫码登陆
 bot = Bot(console_qr=True, cache_path=True)
 # 启用puid属性(可作为用户唯一标识)
@@ -64,6 +65,7 @@ special_group = ensure_one(bot.groups().search('打卡了'.decode("utf-8")))
 groups.append(special_group)
 groups.append(ensure_one(bot.groups().search('总行三部群'.decode("utf-8"))))
 groups.append(ensure_one(bot.groups().search('基础平台'.decode("utf-8"))))
+groups.append(ensure_one(bot.groups().search('打卡异常'.decode("utf-8"))))
 
 # 接入图灵机器人
 tuling = Tuling(api_key)
@@ -162,8 +164,13 @@ def reply_group(msg, groups_index):
                 elif ci_num%5==0:
                     company_group.send(str_a.format(ci_num).decode("utf-8"))
                 elif len(players) - ci_num == 3:
+                    hard = ''
+                    if datetime.now().hour > 20:
+                        hard = '辛苦了'.decode("utf-8")
                     no_ci = loop(l_ci, '', groups_index)
-                    company_group.send(str_b.format(no_ci).decode("utf-8"))
+                    company_group.send(str_b.format(no_ci,hard).decode("utf-8"))
+                elif ci_num == 1:
+                    company_group.send(str_m.format(msg.member.name).decode("utf-8"))
     else:
         log.info('reply_group: false')
     tuling_auto_reply(msg)
@@ -194,16 +201,28 @@ def query_holiday():
 # 程序首次运行进行查询
 query_holiday()
 
+# 仅预先检查输出待打卡统计信息,不停止接受打卡请求
+def check_job():
+    if today_holiday:
+        log.info('skip check_job')
+        return
+    log.info('start check_job')
+    global is_check
+    is_check = 1
+    multiple_loops(l_ci)
+    log.info('end check_job')
+
 # 结算统计信息并输出,结束本轮记录
 def result_job():
+    global is_activity,is_check
+    is_activity = 0
+    is_check = 0
     # 节假日则跳过
     if today_holiday:
         log.info('skip result_job')
         return
     log.info('start result_job')
     multiple_loops(l_ci)
-    global is_activity
-    is_activity = 0
     log.info('end result_job')
 
 # 清空打卡标志,启动下一轮记录
@@ -224,15 +243,23 @@ def multiple_loops(type):
         no_ci = loop(type, '', i)
         # 如果存在未打卡则发信息提醒
         if type == l_ci and ci_nums[i] != len(groups_players[i]):
-            groups[i].send(str_r.format(no_ci))
+            hard = ''
+            if datetime.now().hour > 20:
+                hard = '辛苦了'.decode("utf-8")
+            if is_check == 0:
+                groups[i].send(str_r.format(no_ci, hard))
+            else:
+                groups[i].send(str_b.format(no_ci, hard))
 
 # BackgroundScheduler 定时监控
 scheduler = BackgroundScheduler()
-scheduler.add_job(result_job, 'cron', hour=8, minute=58, timezone='PRC')
+scheduler.add_job(check_job, 'cron', hour=8, minute=53, timezone='PRC')
+scheduler.add_job(result_job, 'cron', hour=8, minute=59, timezone='PRC')
 scheduler.start()
 scheduler.add_job(redo_job, 'cron', hour=16, minute=40, timezone='PRC')
-scheduler.add_job(result_job, 'cron', hour=21, minute=35, timezone='PRC')
-scheduler.add_job(redo_job, 'cron', hour=5, minute=0, timezone='PRC')
+scheduler.add_job(check_job, 'cron', hour=21, minute=10, timezone='PRC')
+scheduler.add_job(result_job, 'cron', hour=21, minute=40, timezone='PRC')
+scheduler.add_job(redo_job, 'cron', hour=5, minute=40, timezone='PRC')
 scheduler.add_job(query_holiday, 'cron', hour=0, minute=20, timezone='PRC')
 
 # 堵塞
