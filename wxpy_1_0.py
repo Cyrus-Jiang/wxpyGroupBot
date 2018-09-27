@@ -169,8 +169,9 @@ def reply_group(msg, groups_index):
                         hard = '辛苦了'.decode("utf-8")
                     no_ci = loop(l_ci, '', groups_index)
                     company_group.send(str_b.format(no_ci,hard).decode("utf-8"))
-                elif ci_num == 1:
-                    company_group.send(str_m.format(msg.member.name).decode("utf-8"))
+                elif ci_num < 4:
+                    if datetime.now().hour < 9:
+                        company_group.send(str_m.format(msg.member.name).decode("utf-8"))
     else:
         log.info('reply_group: false')
     tuling_auto_reply(msg)
