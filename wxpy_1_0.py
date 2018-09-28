@@ -127,7 +127,7 @@ def auto_accept_friend(msg):
 def tuling_auto_reply(msg):
     log.info(msg)
     # 如果是群聊但未被@则不做回复
-    if isinstance(msg.chat, Group) and not msg.is_at:
+    if isinstance(msg.chat, Group) and not msg.is_at and !('mia' in msg.text.lower() or '米娅' in msg.text or '米亚' in msg.text):
         log.info ("<TL> group no at")
         return
     else:
