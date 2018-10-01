@@ -42,6 +42,8 @@ str_m = '{},(^_^)v早上好'
 str_r = '{} {},请注意检查是否已经打卡'
 # 非目标用户字符串
 str_n = '@{} 你好像不是目标用户哦'
+# 欢迎新人入群
+str_w = 'hey，欢迎你加入群聊！'
 # log文件相对路径
 log_path = r'log/'+ datetime.now().strftime("%Y-%m-%d") + '_WGB.txt'
 
@@ -66,6 +68,9 @@ groups.append(special_group)
 groups.append(ensure_one(bot.groups().search('总行三部群'.decode("utf-8"))))
 groups.append(ensure_one(bot.groups().search('基础平台'.decode("utf-8"))))
 groups.append(ensure_one(bot.groups().search('打卡异常'.decode("utf-8"))))
+
+mia = 'mia|Mia|米娅|米亚|咪呀|蜜芽|miya|米雅'
+pattern = re.compile(mia)
 
 # 接入图灵机器人
 tuling = Tuling(api_key)
@@ -117,6 +122,14 @@ def loop(type, puid, groups_index):
         return no_ci
     log.error("error loop")
 
+# 欢迎新人入群
+@bot.register(msg_types=NOTE)
+def wlcm_new_player(msg):
+    log.info(msg)
+    if isinstance(msg.chat, Group) and msg.type == 'Note' and ('加入' in msg.text or '邀请' in msg.text):
+        log.info(str_w)
+        msg.chat.send(str_w)
+
 # 自动接受好友请求
 @bot.register(msg_types=FRIENDS)
 def auto_accept_friend(msg):
@@ -127,11 +140,12 @@ def auto_accept_friend(msg):
 def tuling_auto_reply(msg):
     log.info(msg)
     # 如果是群聊但未被@则不做回复
-    if isinstance(msg.chat, Group) and not msg.is_at and not ('mia' in msg.text.lower() or '米娅' in msg.text or '米亚' in msg.text):
+    if isinstance(msg.chat, Group) and not msg.is_at and re.search(mia, msg.text) is None:
         log.info ("<TL> group no at")
         return
     else:
         log.info ("<TL> tuling auto reply")
+        msg.text = pattern.sub('', msg.text)
         tuling.do_reply(msg)
 
 # 处理指定群聊信息的文字信息
