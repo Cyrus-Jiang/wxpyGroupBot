@@ -3,6 +3,7 @@
 # 导入模块
 import os
 import logging
+import re
 import holiday
 from wxpy import *
 from logger import Logger
