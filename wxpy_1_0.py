@@ -63,12 +63,13 @@ bot = Bot(console_qr=True, cache_path=True)
 # 启用puid属性(可作为用户唯一标识)
 bot.enable_puid()
 # 定位公司打卡群
-groups.append(ensure_one(bot.groups().search('版本测试群'.decode("utf-8"))))
-special_group = ensure_one(bot.groups().search('打卡了'.decode("utf-8")))
-groups.append(special_group)
-groups.append(ensure_one(bot.groups().search('总行三部群'.decode("utf-8"))))
-groups.append(ensure_one(bot.groups().search('基础平台'.decode("utf-8"))))
-groups.append(ensure_one(bot.groups().search('打卡异常'.decode("utf-8"))))
+def load_group():
+    groups.append(ensure_one(bot.groups().search('版本测试群'.decode("utf-8"))))
+    special_group = ensure_one(bot.groups().search('打卡了'.decode("utf-8")))
+    groups.append(special_group)
+    groups.append(ensure_one(bot.groups().search('总行三部群'.decode("utf-8"))))
+    groups.append(ensure_one(bot.groups().search('基础平台'.decode("utf-8"))))
+    groups.append(ensure_one(bot.groups().search('打卡异常'.decode("utf-8"))))
 
 mia = 'mia|Mia|米娅|米亚|咪呀|蜜芽|miya|米雅'
 pattern = re.compile(mia)
@@ -99,7 +100,7 @@ def load_group_player(group_list):
         groups_players.append(players)
     log.info('end load_group_player')
 
-load_group_player(groups)
+# load_group_player(groups)
 
 # 循环遍历list查找指定用户或清空标志
 def loop(type, puid, groups_index):
@@ -203,6 +204,15 @@ def send_bless():
         log.info('holiday_name:' + holiday_name)
         loop_send(bot.groups(), '@All people , Happy '+ holiday_name)
 
+# 每周重新加载一次打卡目标集
+def reload_weekly():
+    log.info('start reload_weekly')
+    global groups,groups_players
+    groups = []
+    groups_players = []
+    load_group()
+    load_group_player(groups)
+	
 # 每日凌晨查询是否节假日
 def query_holiday():
     log.info('start query_holiday')
@@ -214,7 +224,8 @@ def query_holiday():
         send_bless()
     log.info('end query_holiday:' + str(today_holiday) + str(holiday_name))
 
-# 程序首次运行进行查询
+# 程序首次运行进行加载用户列表，并查询节假日
+reload_weekly()
 query_holiday()
 
 # 仅预先检查输出待打卡统计信息,不停止接受打卡请求
@@ -277,6 +288,7 @@ scheduler.add_job(check_job, 'cron', hour=21, minute=10, timezone='PRC')
 scheduler.add_job(result_job, 'cron', hour=21, minute=40, timezone='PRC')
 scheduler.add_job(redo_job, 'cron', hour=5, minute=40, timezone='PRC')
 scheduler.add_job(query_holiday, 'cron', hour=0, minute=20, timezone='PRC')
+scheduler.add_job(reload_weekly, 'cron', day_of_week='6', hour=0, minute=10, timezone='PRC')
 
 # 堵塞
 embed()
