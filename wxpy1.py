@@ -57,7 +57,6 @@ except OSError:
 	print("=====>OSError")
 finally:
 	# 获取log实例对象
-	log = Logger(logName=log_path, logLevel=logging.DEBUG, logger="wxpy_1_0.py").getlog()
 	log = Logger(logName=log_path, logLevel=logging.DEBUG, logger="wxpy1.py").getlog()
 	log.info("log has been successfully created")
 
