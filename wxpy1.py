@@ -54,10 +54,11 @@ try:
 	os.mknod(log_path)
 except OSError:
 	# 如果文件已存在会抛OSError
-	print("=====>OSrror")
+	print("=====>OSError")
 finally:
 	# 获取log实例对象
 	log = Logger(logName=log_path, logLevel=logging.DEBUG, logger="wxpy_1_0.py").getlog()
+	log = Logger(logName=log_path, logLevel=logging.DEBUG, logger="wxpy1.py").getlog()
 	log.info("log has been successfully created")
 
 # 初始化机器人，扫码登陆
